@@ -3406,7 +3406,7 @@ class TableTest extends TestCase
      */
     public function testValidatorWithMethodInBehavior(): void
     {
-        $table = new Table();
+        $table = new Table(['alias' => 'Test']);
         $table->addBehavior('Validation');
 
         $table->getValidator('default')->add(
@@ -5815,8 +5815,8 @@ class TableTest extends TestCase
     {
         $table = $this->getTableLocator()->get('Users');
         $validator = new Validator();
-        $validator->add('username', 'unique', ['rule' => 'validateUnique', 'provider' => 'table']);
         $validator->setProvider('table', $table);
+        $validator->add('username', 'unique', ['rule' => 'validateUnique', 'provider' => 'table']);
 
         $data = ['username' => ['larry', 'notthere']];
         $this->assertNotEmpty($validator->validate($data));
@@ -5844,11 +5844,11 @@ class TableTest extends TestCase
     {
         $table = $this->getTableLocator()->get('Users');
         $validator = new Validator();
+        $validator->setProvider('table', $table);
         $validator->add('username', 'unique', [
             'rule' => ['validateUnique', ['derp' => 'erp', 'scope' => 'id']],
             'provider' => 'table',
         ]);
-        $validator->setProvider('table', $table);
         $data = ['username' => 'larry', 'id' => 3];
         $this->assertNotEmpty($validator->validate($data));
 
@@ -5875,6 +5875,7 @@ class TableTest extends TestCase
         $table->save($entity);
 
         $validator = new Validator();
+        $validator->setProvider('table', $table);
         $validator->add('site_id', 'unique', [
             'rule' => [
                 'validateUnique',
@@ -5886,7 +5887,6 @@ class TableTest extends TestCase
             'provider' => 'table',
             'message' => 'Must be unique.',
         ]);
-        $validator->setProvider('table', $table);
 
         $data = ['site_id' => 1, 'author_id' => null, 'title' => 'Null dupe'];
         $expected = ['site_id' => ['unique' => 'Must be unique.']];
