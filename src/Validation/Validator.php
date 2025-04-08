@@ -19,7 +19,6 @@ namespace Cake\Validation;
 use ArrayAccess;
 use ArrayIterator;
 use BackedEnum;
-use Cake\ORM\Table;
 use Closure;
 use Countable;
 use InvalidArgumentException;
@@ -521,27 +520,6 @@ class Validator implements ArrayAccess, IteratorAggregate, Countable
             $rule['callable'] = [$this->_providers[$rule['provider']], array_shift($rule['rule'])];
         } else {
             $rule['callable'] = $rule['rule'];
-        }
-
-        // For behavior methods which are proxied through the table class, we need
-        // to fish out the behavior instance and use that as the callable, since
-        // `ValidationRule` uses reflection decide whether the context needs to be passed
-        // to the method, when processing the rule.
-        if ($rule['provider'] === 'table' && is_array($rule['callable'])) {
-            $provider = $rule['callable'][0];
-            if (
-                class_exists(Table::class)
-                && $provider instanceof Table
-                && !method_exists($provider, $rule['callable'][1])
-                && $provider->behaviors()->hasMethod($rule['callable'][1])
-            ) {
-                foreach ($provider->behaviors() as $behavior) {
-                    if (in_array($rule['callable'][1], $behavior->implementedMethods(), true)) {
-                        $rule['callable'][0] = $behavior;
-                        break;
-                    }
-                }
-            }
         }
 
         unset($rule['provider'], $rule['rule']);
